@@ -1,0 +1,26 @@
+id = "local.steps"
+name = "herdr-steps"
+version = "0.1.0"
+min_herdr_version = "0.9.0"
+description = "Pin an agent's instructions beside the live agent"
+platforms = ["linux"]
+
+[[actions]]
+id = "mark"
+title = "Pin agent steps"
+contexts = ["pane"]
+command = ["python3", "-m", "steps", "mark"]
+
+[[panes]]
+id = "picker"
+title = "Pin steps"
+placement = "popup"
+width = "80%"
+height = "70%"
+command = ["python3", "-m", "steps", "picker"]
+
+[[panes]]
+id = "pin"
+title = "Steps"
+placement = "split"
+command = ["python3", "-m", "steps", "pin"]
