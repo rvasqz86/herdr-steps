@@ -75,6 +75,19 @@ class HerdrCliTest(unittest.TestCase):
             HerdrCli("hb", run=run).pane_get("w1:p1")
         self.assertIn("ui_busy", str(ctx.exception))
 
+    def test_bin_strips_deleted_suffix_after_herdr_update(self):
+        # A server started before `herdr update` reports its replaced binary
+        # as "<path> (deleted)"; the file at <path> is the new herdr.
+        with tempfile.TemporaryDirectory() as d:
+            real = Path(d) / "herdr"
+            real.write_text("")
+            cli = HerdrCli(bin_path=f"{real} (deleted)")
+            self.assertEqual(cli.bin, str(real))
+
+    def test_bin_deleted_and_gone_falls_back_to_path(self):
+        cli = HerdrCli(bin_path="/nonexistent/herdr (deleted)")
+        self.assertEqual(cli.bin, "herdr")
+
     def test_bin_from_env(self):
         import os
         old = os.environ.get("HERDR_BIN_PATH")

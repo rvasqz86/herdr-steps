@@ -13,9 +13,21 @@ class HerdrError(Exception):
     pass
 
 
+_DELETED = " (deleted)"
+
+
+def _resolve_bin(path: str) -> str:
+    """A server running from a since-replaced binary (e.g. after `herdr update`)
+    reports "<path> (deleted)". Use the new file at <path>, else herdr on PATH."""
+    if not path.endswith(_DELETED):
+        return path
+    stripped = path[: -len(_DELETED)]
+    return stripped if os.path.exists(stripped) else "herdr"
+
+
 class HerdrCli:
     def __init__(self, bin_path: str | None = None, run=subprocess.run):
-        self.bin = bin_path or os.environ.get("HERDR_BIN_PATH") or "herdr"
+        self.bin = _resolve_bin(bin_path or os.environ.get("HERDR_BIN_PATH") or "herdr")
         self._run = run
 
     def _call(self, *args: str) -> str:
