@@ -1,0 +1,56 @@
+<style>
+  .term { background:#111418; color:#c9d1d9; font-family: ui-monospace, Menlo, monospace; font-size:12px; line-height:1.45; border-radius:6px; overflow:hidden; }
+  .term .bar { background:#1c2128; color:#8b949e; padding:4px 8px; font-size:11px; display:flex; justify-content:space-between; }
+  .row { display:flex; }
+  .col { padding:8px 10px; white-space:pre; overflow:hidden; }
+  .dim { color:#6e7681; }
+  .you { color:#79c0ff; }
+  .mark { color:#f0b429; }
+  .side { border-left:1px solid #30363d; background:#0d1014; }
+  .done { color:#3fb950; }
+  .now { background:#2d2a12; }
+  .cap { font-size:13px; margin-top:8px; }
+  ol.steps { font-size:14px; line-height:1.6; }
+</style>
+
+<h2>A + C: a frozen view that starts where the instructions start, with checkboxes on the steps</h2>
+<p class="subtitle">One action, "mark here", at the start of the instructions. Everything else follows from that.</p>
+
+<div class="term">
+  <div class="bar"><span>myapp · claude</span><span class="mark">★ Cloudflare setup · 2/5</span></div>
+  <div class="row">
+    <div class="col" style="flex:1.1"><span class="dim">⏺ Updated wrangler.toml</span>
+<span class="dim">⏺ Ran npm run build</span>
+<span class="dim">  ✓ built in 2.1s</span>
+<span class="you">&gt; ok, now the DNS part?</span>
+⏺ Add a CNAME record:
+  app → myapp.pages.dev
+  Proxy status: on
+<span class="you">&gt; </span>█
+<span class="dim">                 live agent keeps going</span></div>
+    <div class="col side" style="flex:1"><span class="mark">★ Cloudflare setup</span>   <span class="dim">frozen · esc closes</span>
+<span class="you">&gt; how do I get myapp on cloudflare?</span>
+⏺ You'll need a Cloudflare account and
+  the repo pushed to GitHub. Then:
+
+<span class="done">[x] 1. Create a Pages project</span>
+<span class="done">[x] 2. Connect the herdrdev repo</span>
+<span class="now">[ ] 3. Add env vars: DATABASE_URL,</span>
+<span class="now">       SESSION_SECRET</span>
+[ ] 4. Build command: npm run build
+[ ] 5. Add custom domain
+
+  Let me know when you've done step 2…
+<span class="dim">  ↕ scrolls independently · click [ ] to tick</span></div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:16px">
+  <h3>How you'd use it</h3>
+  <ol class="steps">
+    <li>When the agent gives you steps, mark the spot, e.g. right-click → "Mark here", or a key. You only mark the start; no need to select the whole range.</li>
+    <li>The right side opens showing the agent's real output from that mark onward, including your own question and the agent's intro, so you always see how the instructions began.</li>
+    <li>Lines that look like steps (numbered or bulleted) get a checkbox you can click. Everything else stays as plain text.</li>
+    <li>The top bar shows the mark name and progress (2/5). Close the side view and reopen it from there later.</li>
+  </ol>
+</div>
