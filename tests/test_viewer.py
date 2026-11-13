@@ -101,3 +101,39 @@ class SetupAndPinCommandTest(unittest.TestCase):
                           shown.append, lambda *a: None)
         self.assertEqual(rc, 0)
         self.assertEqual(shown, ["That pin no longer exists"])
+
+
+class ViewerScrollTest(unittest.TestCase):
+    def test_scroll_by_reaches_end_without_following_cursor(self):
+        s = ViewerState(pin())
+        for _ in range(5):
+            s.scroll_by(21, total_rows=84, body_h=21)
+        self.assertEqual(s.scroll, 63)
+        self.assertFalse(s.follow_cursor)
+
+    def test_scroll_by_clamps_at_top(self):
+        s = ViewerState(pin())
+        s.scroll_by(-10, total_rows=84, body_h=21)
+        self.assertEqual(s.scroll, 0)
+
+    def test_move_resumes_following(self):
+        s = ViewerState(pin())
+        s.scroll_by(5, total_rows=84, body_h=21)
+        self.assertTrue(s.move(1))
+        self.assertTrue(s.follow_cursor)
+
+    def test_move_without_steps_returns_false(self):
+        p = pin()
+        p.lines = [PinLine("text", "hello")]
+        self.assertFalse(ViewerState(p).move(1))
+
+    def test_focus_first_visible(self):
+        s = ViewerState(pin())
+        # display rows: (pin line index, text); steps are pin lines 3, 4, 7
+        rows = [(i, "") for i in range(8)]
+        s.scroll = 5
+        s.focus_first_visible(rows, body_h=3)
+        self.assertEqual(s.cursor_row, 7)
+        s.scroll = 0
+        s.focus_first_visible(rows, body_h=2)  # no step in view → cursor unchanged
+        self.assertEqual(s.cursor_row, 7)

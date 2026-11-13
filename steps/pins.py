@@ -13,6 +13,8 @@ from steps.model import Pin, PinLine, Turn
 SCROLLBACK_PIN_LINES = 200
 NAME_MAX = 40
 _STEP_RE = re.compile(r"^(\s*)(\d+[.)]|[-*•])\s+\S")
+_RULE_RE = re.compile(r"^\s*([-*_•]\s*){3,}$")
+_FENCE_PREFIXES = ("```", "~~~")
 
 
 def snap_to_user(turns: list[Turn], index: int) -> int:
@@ -38,8 +40,17 @@ def pin_range(turns: list[Turn], start: int) -> list[Turn]:
 def _classify_text(text: str, next_id: int) -> tuple[list[PinLine], int]:
     out: list[PinLine] = []
     step_indent: int | None = None
+    in_fence = False
     for line in text.split("\n"):
-        m = _STEP_RE.match(line)
+        if line.strip().startswith(_FENCE_PREFIXES):
+            in_fence = not in_fence
+            out.append(PinLine("text", line))
+            step_indent = None
+            continue
+        if in_fence:
+            out.append(PinLine("text", line))
+            continue
+        m = None if _RULE_RE.match(line) else _STEP_RE.match(line)
         if m:
             out.append(PinLine("step", line, next_id))
             step_indent = len(m.group(1))

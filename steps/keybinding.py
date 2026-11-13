@@ -6,6 +6,7 @@ formatting stay exactly as they were.
 
 from __future__ import annotations
 
+import os
 import shutil
 import tomllib
 from datetime import datetime
@@ -55,9 +56,17 @@ def ensure_binding(config_text: str) -> tuple[str, str]:
         return config_text, "already"
     if found:
         return config_text, f"conflict:{found}"
-    if config_text and not config_text.endswith("\n"):
-        config_text += "\n"
-    return config_text + BLOCK, "added"
+    base = config_text
+    if base and not base.endswith("\n"):
+        base += "\n"
+    new_text = base + BLOCK
+    try:
+        # An inline `keys.command = [...]` or `keys = {...}` can't be extended
+        # by appending a [[keys.command]] table; never write a broken file.
+        tomllib.loads(new_text)
+    except tomllib.TOMLDecodeError:
+        return config_text, "conflict:inline keys (add the binding by hand)"
+    return new_text, "added"
 
 
 def apply_binding(config_path: Path, now: datetime) -> str:
@@ -73,5 +82,7 @@ def apply_binding(config_path: Path, now: datetime) -> str:
             f"{config_path.name}.bak-herdr-steps-{now.strftime('%Y%m%d-%H%M%S')}"
         )
         shutil.copy2(config_path, backup)
-        config_path.write_text(new_text)
+        tmp = config_path.with_name(config_path.name + ".herdr-steps-tmp")
+        tmp.write_text(new_text)
+        os.replace(tmp, config_path)
     return status

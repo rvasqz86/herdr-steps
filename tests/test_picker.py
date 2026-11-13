@@ -179,3 +179,19 @@ class MainTest(unittest.TestCase):
         self.assertEqual(main.cmd_picker(self.env, herdr, self.home, ui, NOW), 0)
         self.assertEqual(PinStore(self.state).list_for_folder("/p"), [])
         self.assertEqual(herdr.opened, [])
+
+
+class SplitFailureTest(MainTest):
+    def test_picker_split_open_failure_shows_message(self):
+        from steps.herdr import HerdrError
+
+        class Failing(FakeHerdr):
+            def open_pane(self, *a, **k):
+                raise HerdrError("plugin pane open failed: pane not found")
+
+        ui = FakeUI(choice=lambda s: ("turn", 0))
+        rc = main.cmd_picker(self.env, Failing(self.pane, "1. a\n"), self.home, ui, NOW)
+        self.assertEqual(rc, 1)
+        self.assertEqual(len(PinStore(self.state).list_for_folder("/p")), 1)
+        self.assertIn("Saved pin 'My pin' but couldn't open it", ui.messages[0])
+        self.assertIn("prefix+m", ui.messages[0])

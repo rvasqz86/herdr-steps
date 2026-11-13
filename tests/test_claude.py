@@ -61,3 +61,35 @@ class FindClaudeSessionTest(unittest.TestCase):
     def test_find_missing_returns_none(self):
         self.assertIsNone(find_claude_session("nope", "/nowhere", self.home))
         self.assertIsNone(find_claude_session(None, "/nowhere", self.home))
+
+
+class NonPromptUserRecordsTest(unittest.TestCase):
+    def write(self, recs):
+        import json
+        d = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, d)
+        p = d / "s.jsonl"
+        p.write_text("".join(json.dumps(r) + "\n" for r in recs))
+        return p
+
+    def user(self, content, **extra):
+        return {"type": "user", "message": {"role": "user", "content": content}, **extra}
+
+    def test_only_human_prompts_are_user_turns(self):
+        path = self.write([
+            self.user("real question", origin={"kind": "human"}),
+            self.user("<task-notification>done</task-notification>",
+                      origin={"kind": "task-notification"}),
+            self.user("<task-notification>x</task-notification>"),
+            self.user("This session is being continued...", isCompactSummary=True),
+            self.user("transcript only", isVisibleInTranscriptOnly=True),
+            self.user("<bash-input>ls</bash-input>"),
+            self.user("<bash-stdout>a</bash-stdout><bash-stderr></bash-stderr>"),
+            self.user("<bash-stderr>e</bash-stderr>"),
+            self.user("<local-command-stderr>e</local-command-stderr>"),
+            self.user("second question"),
+        ])
+        self.assertEqual(
+            [t.text for t in read_claude_turns(path)],
+            ["real question", "second question"],
+        )

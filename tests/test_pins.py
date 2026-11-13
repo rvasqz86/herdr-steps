@@ -137,3 +137,19 @@ class PinStoreTest(unittest.TestCase):
         (self.dir / "pins" / "bad.json").write_text("{nope")
         self.assertEqual(self.store.list_for_folder("/p"), [])
         self.assertIsNone(self.store.load("bad"))
+
+
+class FenceTest(unittest.TestCase):
+    def test_code_fence_lines_not_steps(self):
+        text = "1. Apply this:\n```diff\n- old line\n+ new line\n```\n  ```yaml\n  - name: build\n  ```\n2. Done"
+        lines = classify_lines([Turn("agent", text)])
+        steps = [l.text for l in lines if l.kind == "step"]
+        self.assertEqual(steps, ["1. Apply this:", "2. Done"])
+
+    def test_tilde_fence(self):
+        lines = classify_lines([Turn("agent", "~~~\n- x\n~~~\n- y")])
+        self.assertEqual([l.text for l in lines if l.kind == "step"], ["- y"])
+
+    def test_horizontal_rule_not_step(self):
+        lines = classify_lines([Turn("agent", "* * *\n- - -\n- real")])
+        self.assertEqual([l.text for l in lines if l.kind == "step"], ["- real"])

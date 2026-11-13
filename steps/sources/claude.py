@@ -18,6 +18,11 @@ _WRAPPER_PREFIXES = (
     "<local-command-stdout>",
     "<local-command-caveat>",
     "<system-reminder>",
+    "<local-command-stderr>",
+    "<bash-input>",
+    "<bash-stdout>",
+    "<bash-stderr>",
+    "<task-notification>",
 )
 _SUMMARY_MAX = 80
 
@@ -95,7 +100,15 @@ def read_claude_turns(path: Path) -> list[Turn]:
             kind = rec.get("type")
             if kind not in ("user", "assistant"):
                 continue
-            if rec.get("isSidechain") or rec.get("isMeta"):
+            if (
+                rec.get("isSidechain")
+                or rec.get("isMeta")
+                or rec.get("isCompactSummary")
+                or rec.get("isVisibleInTranscriptOnly")
+            ):
+                continue
+            origin = rec.get("origin")
+            if isinstance(origin, dict) and origin.get("kind") not in (None, "human"):
                 continue
             message = rec.get("message")
             if not isinstance(message, dict):

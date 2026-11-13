@@ -74,10 +74,17 @@ def cmd_picker(env, herdr, home: Path, ui, now: datetime) -> int:
             session if source == "claude" else None, now,
         )
         store.save(pin)
-    herdr.open_pane(
-        "pin", "split", target_pane=pane_id, direction="right",
-        env={"HERDR_STEPS_PIN": pin.id}, focus=False,
-    )
+    try:
+        herdr.open_pane(
+            "pin", "split", target_pane=pane_id, direction="right",
+            env={"HERDR_STEPS_PIN": pin.id}, focus=False,
+        )
+    except HerdrError as e:
+        ui.message(
+            f"Saved pin '{pin.name}' but couldn't open it: {e}. "
+            "Press prefix+m to reopen it."
+        )
+        return 1
     return 0
 
 

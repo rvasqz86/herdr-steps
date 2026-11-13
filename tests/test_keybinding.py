@@ -88,3 +88,28 @@ class ApplyBindingTest(unittest.TestCase):
         self.assertEqual(apply_binding(cfg, NOW), "added")
         self.assertEqual(cfg.read_text(), BLOCK.lstrip())
         tomllib.loads(cfg.read_text())
+
+
+class InlineCommandTest(unittest.TestCase):
+    def test_inline_command_array_refused(self):
+        src = '[keys]\ncommand = [{ key = "ctrl+x", type = "shell", command = "ls" }]\n'
+        text, status = ensure_binding(src)
+        self.assertEqual(text, src)
+        self.assertTrue(status.startswith("conflict:"), status)
+
+    def test_inline_keys_table_refused(self):
+        src = 'keys = { prefix = "ctrl+a" }\n'
+        text, status = ensure_binding(src)
+        self.assertEqual(text, src)
+        self.assertTrue(status.startswith("conflict:"), status)
+
+    def test_apply_inline_leaves_file_untouched(self):
+        d = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, d)
+        cfg = d / "config.toml"
+        src = "keys.command = []\n"
+        cfg.write_text(src)
+        status = apply_binding(cfg, NOW)
+        self.assertTrue(status.startswith("conflict:"), status)
+        self.assertEqual(cfg.read_text(), src)
+        self.assertEqual(len(list(d.iterdir())), 1)

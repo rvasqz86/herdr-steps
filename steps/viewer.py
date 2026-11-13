@@ -17,6 +17,7 @@ class ViewerState:
         self.step_rows = [i for i, l in enumerate(pin.lines) if l.kind == "step"]
         self._pos = 0 if self.step_rows else None
         self.scroll = 0
+        self.follow_cursor = True
 
     @property
     def cursor_row(self) -> int | None:
@@ -26,9 +27,24 @@ class ViewerState:
         done, total = self.pin.progress
         return f"★ {self.pin.name} · {done}/{total}"
 
-    def move(self, delta: int) -> None:
-        if self._pos is not None:
-            self._pos = max(0, min(len(self.step_rows) - 1, self._pos + delta))
+    def move(self, delta: int) -> bool:
+        """Move between steps. False when there are no steps to move to."""
+        if self._pos is None:
+            return False
+        self._pos = max(0, min(len(self.step_rows) - 1, self._pos + delta))
+        self.follow_cursor = True
+        return True
+
+    def scroll_by(self, n: int, total_rows: int, body_h: int) -> None:
+        self.scroll = max(0, min(self.scroll + n, max(0, total_rows - body_h)))
+        self.follow_cursor = False
+
+    def focus_first_visible(self, rows: list[tuple[int, str]], body_h: int) -> None:
+        """Put the cursor on the first step shown in the current view, if any."""
+        for line_index, _ in rows[self.scroll : self.scroll + body_h]:
+            if line_index in self.step_rows:
+                self._pos = self.step_rows.index(line_index)
+                return
 
     def _toggle(self, row: int) -> int:
         step_id = self.pin.lines[row].step_id
@@ -92,8 +108,8 @@ def _viewer_loop(stdscr, state: ViewerState, on_change):
         h, w = stdscr.getmaxyx()
         rows = _layout(state, w - 3)
         body_h = max(1, h - body_top - 1)
-        # keep the cursor's first display row on screen
-        if state.cursor_row is not None:
+        # keep the cursor on screen only after the cursor itself moved
+        if state.follow_cursor and state.cursor_row is not None:
             cur = next((n for n, (i, _) in enumerate(rows) if i == state.cursor_row), 0)
             if cur < state.scroll:
                 state.scroll = cur
@@ -128,24 +144,26 @@ def _viewer_loop(stdscr, state: ViewerState, on_change):
             if state.toggle_at_cursor() is not None:
                 on_change()
         elif key in (curses.KEY_UP, "k"):
-            state.move(-1)
+            if not state.move(-1):
+                state.scroll_by(-1, len(rows), body_h)
         elif key in (curses.KEY_DOWN, "j"):
-            state.move(1)
-        elif key == curses.KEY_PPAGE:
-            state.scroll -= body_h
-            state.move(-3)
-        elif key == curses.KEY_NPAGE:
-            state.scroll += body_h
-            state.move(3)
+            if not state.move(1):
+                state.scroll_by(1, len(rows), body_h)
+        elif key in (curses.KEY_PPAGE, curses.KEY_NPAGE):
+            step = body_h - 1 if key == curses.KEY_NPAGE else -(body_h - 1)
+            state.scroll_by(step, len(rows), body_h)
+            state.focus_first_visible(rows, body_h)
         elif key == curses.KEY_MOUSE:
             try:
                 _, _, my, _, bstate = curses.getmouse()
             except curses.error:
                 continue
             if bstate & getattr(curses, "BUTTON4_PRESSED", 0):
-                state.move(-1)
+                state.scroll_by(-3, len(rows), body_h)
+                state.focus_first_visible(rows, body_h)
             elif bstate & getattr(curses, "BUTTON5_PRESSED", 0):
-                state.move(1)
+                state.scroll_by(3, len(rows), body_h)
+                state.focus_first_visible(rows, body_h)
             elif bstate & (curses.BUTTON1_CLICKED | curses.BUTTON1_PRESSED):
                 n = my - body_top
                 if 0 <= n < len(visible) and state.toggle_row(visible[n][0]) is not None:
