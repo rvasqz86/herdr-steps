@@ -19,18 +19,50 @@ The agent keeps running on the left the whole time.
 
 ## Install
 
-On any Linux or macOS machine with herdr:
+Works on Linux and macOS. On each machine:
 
-```bash
-herdr plugin install rvasqz86/herdr-steps
-herdr plugin list            # shows the folder it was installed to
-cd <that folder> && python3 -m steps setup
-```
+1. **Check herdr.** You need herdr 0.9.0 or newer (plugins arrived in 0.9.0):
+
+   ```bash
+   herdr --version
+   ```
+
+   If it's older, run `herdr update` (or `brew upgrade herdr` if you installed
+   it with Homebrew).
+
+2. **Check Python.** You need Python 3.11 or newer as `python3`:
+
+   ```bash
+   python3 --version
+   ```
+
+   On a Mac, Apple's built-in `python3` is too old. Install a newer one with
+   `brew install python`, open a new terminal, and check again.
+
+3. **Install the plugin:**
+
+   ```bash
+   herdr plugin install rvasqz86/herdr-steps
+   ```
+
+   herdr asks you to confirm, then downloads it to
+   `~/.config/herdr/plugins/github/local.steps-<code>`.
+
+4. **Add the shortcut:**
+
+   ```bash
+   cd ~/.config/herdr/plugins/github/local.steps-* && python3 -m steps setup
+   ```
+
+5. **Try it.** In a pane running an agent, press the herdr prefix, then `m`.
+   The prefix is `Ctrl+B` unless you changed `prefix` under `[keys]` in your
+   herdr config.
 
 Get later changes with `herdr plugin update local.steps`.
 
-For development, link a checkout instead:
-`herdr plugin link ~/development/herdr-steps`.
+For development, link a checkout instead of installing:
+`herdr plugin link ~/development/herdr-steps`, then run step 4 from that
+folder.
 
 `setup` adds this to your herdr config (`$HERDR_CONFIG_PATH` or
 `~/.config/herdr/config.toml`), after saving a backup next to it, and reloads
@@ -47,9 +79,7 @@ description = "pin agent steps"
 It changes nothing if the binding is already there, and refuses if
 `prefix+m` is used by something else.
 
-Needs Python 3.11+ (standard library only) as `python3` on herdr's PATH.
-Linux and macOS. On a Mac, Apple's built-in `python3` is too old; install a
-newer one (for example `brew install python`).
+The plugin uses only Python's standard library; nothing else to install.
 
 ## Where history comes from
 
