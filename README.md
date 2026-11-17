@@ -19,10 +19,20 @@ The agent keeps running on the left the whole time.
 
 ## Install
 
+On any Linux or macOS machine with herdr:
+
 ```bash
-herdr plugin link ~/development/herdr-steps
-cd ~/development/herdr-steps && python3 -m steps setup
+herdr plugin install rvasqz86/herdr-steps
+herdr plugin list            # shows the folder it was installed to
+cd <that folder> && python3 -m steps setup
 ```
+
+The repo is private, so `git` on that machine must be signed in to GitHub
+(`gh auth login`, then `gh auth setup-git`). Get later changes with
+`herdr plugin update local.steps`.
+
+For development, link a checkout instead:
+`herdr plugin link ~/development/herdr-steps`.
 
 `setup` adds this to your herdr config (`$HERDR_CONFIG_PATH` or
 `~/.config/herdr/config.toml`), after saving a backup next to it, and reloads
@@ -39,7 +49,9 @@ description = "pin agent steps"
 It changes nothing if the binding is already there, and refuses if
 `prefix+m` is used by something else.
 
-Needs Python 3.11+ (standard library only). Linux.
+Needs Python 3.11+ (standard library only) as `python3` on herdr's PATH.
+Linux and macOS. On a Mac, Apple's built-in `python3` is too old; install a
+newer one (for example `brew install python`).
 
 ## Where history comes from
 

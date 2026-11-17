@@ -3,7 +3,7 @@ name = "herdr-steps"
 version = "0.1.0"
 min_herdr_version = "0.9.0"
 description = "Pin an agent's instructions beside the live agent"
-platforms = ["linux"]
+platforms = ["linux", "macos"]
 
 [[actions]]
 id = "mark"
