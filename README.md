@@ -27,9 +27,7 @@ herdr plugin list            # shows the folder it was installed to
 cd <that folder> && python3 -m steps setup
 ```
 
-The repo is private, so `git` on that machine must be signed in to GitHub
-(`gh auth login`, then `gh auth setup-git`). Get later changes with
-`herdr plugin update local.steps`.
+Get later changes with `herdr plugin update local.steps`.
 
 For development, link a checkout instead:
 `herdr plugin link ~/development/herdr-steps`.
