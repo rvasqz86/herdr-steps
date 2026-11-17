@@ -45,14 +45,15 @@ Works on Linux and macOS. On each machine:
    herdr plugin install rvasqz86/herdr-steps
    ```
 
-   herdr asks you to confirm, then downloads it to
-   `~/.config/herdr/plugins/github/local.steps-<code>`.
-
-4. **Add the shortcut:**
+4. **Add the shortcut.** `setup` has to run inside the folder herdr installed
+   the plugin to; this asks herdr for that folder and runs it there:
 
    ```bash
-   cd ~/.config/herdr/plugins/github/local.steps-* && python3 -m steps setup
+   cd "$(herdr plugin list --plugin local.steps --json | python3 -c 'import json,sys; print(json.load(sys.stdin)["result"]["plugins"][0]["plugin_root"])')" && python3 -m steps setup
    ```
+
+   It prints what it changed, for example
+   `Added prefix+m → pin agent steps to ~/.config/herdr/config.toml`.
 
 5. **Try it.** In a pane running an agent, press the herdr prefix, then `m`.
    The prefix is `Ctrl+B` unless you changed `prefix` under `[keys]` in your
