@@ -61,8 +61,8 @@ Works on Linux and macOS. On each machine:
 Get later changes with `herdr plugin update local.steps`.
 
 For development, link a checkout instead of installing:
-`herdr plugin link ~/development/herdr-steps`, then run step 4 from that
-folder.
+`herdr plugin link ~/development/herdr-steps`, then run
+`python3 -m steps setup` inside that folder.
 
 `setup` adds this to your herdr config (`$HERDR_CONFIG_PATH` or
 `~/.config/herdr/config.toml`), after saving a backup next to it, and reloads
