@@ -74,3 +74,7 @@ so they survive Claude's `/clear` and herdr restarts.
 ```bash
 python3 -m unittest
 ```
+
+## License
+
+MIT. See `LICENSE`.
